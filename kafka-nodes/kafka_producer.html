@@ -1,0 +1,60 @@
+<script type="text/javascript">
+    RED.nodes.registerType('kafka producer',{
+        category: 'output',
+        color: '#B0E2FF',
+        defaults: {
+            name: {value:""},
+            zk:{value:"", required: true},
+            topics: {value:"", required: true},
+            isAvro: {value:""},
+            debug: {value:""}
+        },
+        inputs:1,
+        outputs:0,
+        icon: "cloudera2.png",
+        align: "right",
+        label: function() {
+            return this.name || "kafka producer";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="kafka producer">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i>Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-zk"><i class="icon-tag"></i>ZK Quorum</label>
+        <input type="text" id="node-input-zk" placeholder="ZK Quorum">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-topics"><i class="icon-tag"></i>Topic(s)</label>
+        <input type="text" id="node-input-topics" placeholder="Topics">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-isAvro"><i class="icon-tag"></i>Avro</label>
+        <input type="checkbox" id="node-input-isAvro" style="display: inline-block; width: auto; vertical-align: top;">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-debug"><i class="icon-tag"></i>Debug</label>
+        <input type="checkbox" id="node-input-debug" style="display: inline-block; width: auto; vertical-align: top;" value="debug">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="kafka producer">
+    <p>A simple Kafka producer node.</p>
+    <p><b>ZooKeeper Quorum</b>  <i>The ZooKeeper quorum of Kafka cluster.</i></p>
+    <p><b>Topic(s)</b> <i>The topic(s) of message to produce.</i></p>
+    <p>Check <b>Avro Payload</b> <i> if payload has been Avro serialized.</i></p>
+    <p>Check <b>Debug</b> <i> to print extra information to console.</i></p>
+    <pre>
+Example:
+Topic(s) = "topic"
+OR
+Topic(s) = "topic1, topic2, topic3"
+    </pre>
+</script>

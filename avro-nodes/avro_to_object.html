@@ -1,0 +1,28 @@
+<script type="text/javascript">
+    RED.nodes.registerType('avro to object',{
+        category: 'function',
+        color: '#B0E2FF',
+        defaults: {
+            schema:{value:"", required: true}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "cloudera2.png",
+        align: "right",
+        label: function() {
+            return this.name || "avro to object";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="avro">
+    <div class="form-row">
+        <label for="node-input-schema"><i class="icon-tag"></i>Avro Schema Path</label>
+        <input type="text" id="node-input-schema" placeholder="Avro Schema Path">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="avro to object">
+    <p>A node that either serializes a JSON field to Avro, or deserializes an Avro field to JSON.</p>
+    <p><b>Schema</b> - Path to an Avro schema.</p>
+</script>

@@ -1,0 +1,116 @@
+<script type="text/javascript">
+    RED.nodes.registerType('kafka producer',{
+        category: 'output',
+        color: '#87CEFF',
+        defaults: {
+            zk:{value:"", required: true},
+            topics: {value:"", required: true},
+            isAvro: {value:""},
+            debug: {value:""}
+        },
+        inputs:1,
+        outputs:0,
+        icon: "cloudera2.png",
+        align: "right",
+        label: function() {
+            return this.name || "kafka producer";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="kafka producer">
+    <div class="form-row">
+        <label for="node-input-zk"><i class="icon-tag"></i>ZK Quorum</label>
+        <input type="text" id="node-input-zk" placeholder="ZK Quorum">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-topics"><i class="icon-tag"></i>Topic(s)</label>
+        <input type="text" id="node-input-topics" placeholder="Topics">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-isAvro"><i class="icon-tag"></i>Avro</label>
+        <input type="checkbox" id="node-input-isAvro" style="display: inline-block; width: auto; vertical-align: top;">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-debug"><i class="icon-tag"></i>Debug</label>
+        <input type="checkbox" id="node-input-debug" style="display: inline-block; width: auto; vertical-align: top;" value="debug">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="kafka producer">
+    <p>A simple Kafka producer node.</p>
+    <p><b>ZooKeeper Quorum</b>  <i>The ZooKeeper quorum of Kafka cluster.</i></p>
+    <p><b>Topic(s)</b> <i>The topic(s) of message to produce.</i></p>
+    <p>Check <b>Avro Payload</b> <i> if payload has been Avro serialized.</i></p>
+    <p>Check <b>Debug</b> <i> to print extra information to console.</i></p>
+    <pre>
+Example:
+Topic(s) = "topic"
+OR
+Topic(s) = "topic1, topic2, topic3"
+    </pre>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('kafka consumer',{
+        category: 'input',
+        color: '#B0E2FF',
+        defaults: {
+            zk:{value:"", required: true},
+            topics: {value:"", required: true},
+            groupId:{value:"", required: true},
+            debug: {value:""},
+            autoCommit:{value:true, required: true}
+        },
+        inputs:0,
+        outputs:1,
+        icon: "cloudera2.png",
+        label: function() {
+            return this.name || "kafka consumer";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="kafka consumer">
+    <div class="form-row">
+        <label for="node-input-zk"><i class="icon-tag"></i>ZK Quorum</label>
+        <input type="text" id="node-input-zk" placeholder="ZK Quorum">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-topics"><i class="icon-tag"></i>Topic(s)</label>
+        <input type="text" id="node-input-topics" placeholder="Topic">
+    </div>
+
+      <div class="form-row">
+        <label for="node-input-groupId"><i class="icon-tag"></i>GroupId</label>
+        <input type="text" id="node-input-groupId" placeholder="GroupId">
+    </div>
+      <div class="form-row">
+        <label for="node-input-autoCommit"><i class="icon-tag"></i>Auto Commit</label>
+        <input type="checkbox" id="node-input-autoCommit"  style="display: inline-block; width: auto; vertical-align: top;" placeholder="Auto Commit">
+    </div>
+    <div class="form-row">
+        <label for="node-input-debug"><i class="icon-tag"></i>Debug</label>
+        <input type="checkbox" id="node-input-debug" style="display: inline-block; width: auto; vertical-align: top;" value="debug">
+    </div>
+</script>
+
+
+<script type="text/x-red" data-help-name="kafka consumer">
+    <p>A simple Kafka consumer node.</p>
+    <p><b>ZooKeeper Quorum</b>  <i>The ZooKeeper quorum of Kafka cluster.</i></p>
+    <p><b>GroupId</b> <i>The groupId of consumers.</i></p>
+    <p><b>Topic(s)</b> <i>The topic(s) of message to produce.</i></p>
+    <p><b>Auto Commit</b> <i>Messages are committed automatically.</i></p>
+    <p>Check <b>Debug</b> <i> to print extra information to console.</i></p>
+    <pre>
+Example:
+Topic(s) = "topic"
+OR
+Topic(s) = "topic1, topic2, topic3"
+    </pre>
+</script>
