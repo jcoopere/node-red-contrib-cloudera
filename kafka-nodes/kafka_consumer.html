@@ -1,65 +1,140 @@
 <script type="text/javascript">
-    RED.nodes.registerType('kafka consumer',{
+    RED.nodes.registerType('kafka consumer', {
         category: 'input',
         color: '#B0E2FF',
         defaults: {
-            name: {value:""},
-            zk:{value:"", required: true},
-            topics: {value:"", required: true},
-            groupId:{value:"", required: true},
-            debug: {value:""},
-            autoCommit:{value:true, required: true}
+            name: {value: ""},
+            zk: {value: "", required: true},
+            topics: {value: "", required: true},
+            consumerGroupId: {value: ""},
+            autoCommit: {value: ""},
+            kafkaEncoding: {value: "utf8"}
         },
         inputs:0,
         outputs:1,
         icon: "cloudera2.png",
         label: function() {
             return this.name || "kafka consumer";
+        },
+        labelStyle: function() {
+            return this.name ? "node_label_italic" : "";
+        },
+        oneditprepare: function() {
+            var showadvanced = showadvanced || true;
+            var advancedLabelText = "Advanced Configuration:"
+            var showall = function() {
+                showadvanced = !showadvanced;
+                if (showadvanced) {
+                    $("#advanced-options").show();
+                    $("#advanced").html('<label for="node-advanced" style="width:200px !important"><i class="fa fa-minus-square"></i> '+ advancedLabelText +'</label>');
+                }
+                else {
+                    $("#advanced-options").hide();
+                    $("#advanced").html('<label for="node-advanced" style="width:200px !important"><i class="fa fa-plus-square"></i> '+ advancedLabelText +' ...</label>');
+                }
+            };
+            showall();
+            $("#advanced").click(function() { showall(); });
         }
     });
 </script>
 
 <script type="text/x-red" data-template-name="kafka consumer">
     <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i>Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="kafka consumer">
     </div>
     <div class="form-row">
-        <label for="node-input-zk"><i class="icon-tag"></i>ZK Quorum</label>
-        <input type="text" id="node-input-zk" placeholder="ZK Quorum">
-    </div>
-
-    <div class="form-row">
-        <label for="node-input-topics"><i class="icon-tag"></i>Topic(s)</label>
-        <input type="text" id="node-input-topics" placeholder="Topic">
-    </div>
-
-      <div class="form-row">
-        <label for="node-input-groupId"><i class="icon-tag"></i>GroupId</label>
-        <input type="text" id="node-input-groupId" placeholder="GroupId">
-    </div>
-      <div class="form-row">
-        <label for="node-input-autoCommit"><i class="icon-tag"></i>Auto Commit</label>
-        <input type="checkbox" id="node-input-autoCommit"  style="display: inline-block; width: auto; vertical-align: top;" placeholder="Auto Commit">
+        <label for="node-input-zk"><i class="icon-globe"></i> ZooKeeper</label>
+        <input type="text" id="node-input-zk" placeholder="zkhost1:2181[,zkhost2:2181...]">
     </div>
     <div class="form-row">
-        <label for="node-input-debug"><i class="icon-tag"></i>Debug</label>
-        <input type="checkbox" id="node-input-debug" style="display: inline-block; width: auto; vertical-align: top;" value="debug">
+        <label for="node-input-topics"><i class="icon-tasks"></i> Topic(s)</label>
+        <input type="text" id="node-input-topics" placeholder="topic1[,topic2...]">
+    </div>
+    <div class="form-row">
+        <label for="node-input-kafkaEncoding"><i class="icon-font"></i> Encoding</label>
+        <select id="node-input-kafkaEncoding">
+            <option value="utf8" selected="selected">text (utf8)</option>
+            <option value="buffer">avro (buffer)</option>
+        </select>
+    </div>
+    <div class="form-row" id="advanced"></div>
+    <div id="advanced-options">
+        <div class="form-tips"><span>This section exposes advanced configuration options for the kafka-node package. See <a href="https://www.npmjs.com/package/kafka-node">kafka-node documentation</a> for details.</span></div>
+        <div><p><b>Kafka Consumer Options:</b></p></div>
+        <div class="form-row">
+            <label for="node-input-consumerGroupId"><i class="icon-tag"></i> groupId</label>
+            <input type="text" id="node-input-consumerGroupId" placeholder="kafka-node-group">
+        </div>
+        <div class="form-row">
+            <label for="node-input-consumerId"><i class="icon-tag"></i> id</label>
+            <input type="text" id="node-input-consumerId" placeholder="[groupId + uuid]">
+        </div>
+        <div class="form-row">
+            <label for="node-input-autoCommit"><i class="icon-wrench"></i> autoCommit</label>
+            <input type="text" id="node-input-autoCommit" placeholder="true">
+        </div>
+        <div class="form-row">
+            <label for="node-input-ackTimeoutMs"><i class="icon-wrench"></i> ackTimeoutMs</label>
+            <input type="text" id="node-input-ackTimeoutMs" placeholder="100">
+        </div>
+        <div class="form-row">
+            <label for="node-input-partitionerType"><i class="icon-wrench"></i> partitionerType</label>
+            <input type="text" id="node-input-partitionerType" placeholder="0">
+        </div>
+        <div class="form-row">
+            <label for="node-input-fromOffset"><i class="icon-wrench"></i> fromOffset</label>
+            <input type="text" id="node-input-fromOffset" placeholder="false">
+        </div>
+        <div><p><b>Kafka Client ID:</b></p></div>
+        <div class="form-row">
+            <label for="node-input-kafkaClientId"><i class="icon-tag"></i> id</label>
+            <input type="text" id="node-input-kafkaClientId" placeholder="kafka-client-node">
+        </div>
+        <div><p><b>Kafka Client ZooKeeper Options:</b></p></div>
+        <div class="form-row">
+            <label for="node-input-zkSessionTimeout"><i class="icon-wrench"></i> sessionTimeout</label>
+            <input type="text" id="node-input-zkSessionTimeout" placeholder="30000">
+        </div>
+        <div class="form-row">
+            <label for="node-input-zkSpinDelay"><i class="icon-wrench"></i> spinDelay</label>
+            <input type="text" id="node-input-zkSpinDelay" placeholder="1000">
+        </div>
+        <div class="form-row">
+            <label for="node-input-zkRetries"><i class="icon-wrench"></i> retries</label>
+            <input type="text" id="node-input-zkRetries" placeholder="0">
+        </div>
+        <div><p><b>Kafka Client No Ack Batch Options:</b></p></div>
+        <div class="form-row">
+            <label for="node-input-noAckBatchSize"><i class="icon-wrench"></i> noAckBatchSize</label>
+            <input type="text" id="node-input-noAckBatchSize" placeholder="null">
+        </div>
+        <div class="form-row">
+            <label for="node-input-noAckBatchAge"><i class="icon-wrench"></i> noAckBatchAge</label>
+            <input type="text" id="node-input-noAckBatchAge" placeholder="null">
+        </div>
+        <div><p><b>Kafka SSL Options:</b></p></div>
+        <div><p><i>Not implemented.</i></p></div>
     </div>
 </script>
 
 
 <script type="text/x-red" data-help-name="kafka consumer">
-    <p>A simple Kafka consumer node.</p>
+    <p>A Kafka Consumer node.</p>
     <p><b>ZooKeeper Quorum</b>  <i>The ZooKeeper quorum of Kafka cluster.</i></p>
-    <p><b>GroupId</b> <i>The groupId of consumers.</i></p>
-    <p><b>Topic(s)</b> <i>The topic(s) of message to produce.</i></p>
-    <p><b>Auto Commit</b> <i>Messages are committed automatically.</i></p>
-    <p>Check <b>Debug</b> <i> to print extra information to console.</i></p>
+    <pre>
+Example:
+ZooKeeper = "localhost:2181"
+OR
+ZooKeeper = "zkhost1:2181,zkhost2:2181,zkhost3:2181"
+    </pre>
+    <p><b>Topic(s)</b> <i>The Kafka topic(s) this consumer should subscribe to.</i></p>
     <pre>
 Example:
 Topic(s) = "topic"
 OR
 Topic(s) = "topic1, topic2, topic3"
     </pre>
+    <p><b>Encoding</b> <i>The encoding format of messages to be consumed. Generally "text". If messages have been Avro serialized, select "avro" and pass messages to an avro function node configured with the corresponding Avro schema to deserialize them.</i></p>
 </script>

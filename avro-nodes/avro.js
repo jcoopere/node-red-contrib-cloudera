@@ -25,10 +25,10 @@ module.exports = function(RED) {
 						msg.payload = type.toBuffer(msg.payload);
 						node.send(msg);
 					} else {
-						node.error("Object is not valid for the provided Avro schema: " + JSON.stringify(msg.payload));
+						node.error("msg.payload object is not valid for the provided Avro schema: " + JSON.stringify(msg.payload));
 					}
 				} else {
-					node.error("msg.payload is not an object:" + msg.payload);
+					node.error("msg.payload is not an object, type is: " + typeof(msg.payload));
 				}
 			});
 		} catch (e) {

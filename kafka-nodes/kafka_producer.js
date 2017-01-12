@@ -7,53 +7,76 @@ module.exports = function(RED) {
 	function kafkaProducerNode(config) {
 		RED.nodes.createNode(this, config);
 
-		this.zk = config.zk;
-		this.topics = config.topics;
-		this.isAvro = config.isAvro; // currently this does nothing TODO decide what it should do, or remove
-		this.debug = config.debug;
-		// TODO: include other client options listed on https://www.npmjs.com/package/kafka-node
-		this.clientId = 'kafka-client-node'; // should this be an arg?
-		// this.zkOptions
-		// this.noAckBatchOptions
-		// this.sslOptions
+		this.kafkaZk = config.zk;
+		this.kafkaTopics = config.topics.split(',');
+		this.kafkaClientId = config.kafkaClientId ? config.kafkaClientId : null;
+		this.zkSessionTimeout = config.zkSessionTiemout ? config.zkSessionTimeout : null;
+		this.zkSpinDelay = config.zkSpinDelay ? config.zkSpinDelay : null;
+		this.zkRetries = config.zkRetries ? config.zkRetries : null;
+		this.kafkaNoAckBatchSize = config.noAckBatchSize ? config.noAckBatchSize : null;
+		this.kafkaNoAckBatchAge = config.noAckBatchAge ? config.noAckBatchAge : null;
+		this.kafkaRequireAcks = config.requireAcks ? config.requireAcks : null;
+		this.kafkaAckTimeoutMs = config.ackTimeoutMs ? config.ackTimeoutMs : null;
+		this.kafkaPartitionerType = config.partitionerType ? config.partitionerType : null;
 
-		var kafkaClient = new kafka.Client(this.zk, this.clientId);
-
-		// TODO: make these configurable
-		var kafkaProducerOptions = {
-			requireAcks: 1,
-			ackTimeoutMs: 100,
-			partitionerType: 2
+		this.kafkaClientZkOptions = {
+			sessionTimeout: this.zkSessionTimeout,
+			spinDelay: this.zkSpinDelay,
+			retries: this.zkRetries
 		}
 
-		var kafkaProducer = new kafka.Producer(kafkaClient, kafkaProducerOptions);
-        this.status({fill:"green", shape:"dot", text:"connected to "+ this.zk});
+		this.kafkaClientNoAckBatchOptions = {
+			noAckBatchSize: this.kafkaNoAckBatchSize,
+			noAckBatchAge: this.kafkaNoAckBatchAge
+		}
+
+		/*
+		// TODO: implement SSL options
+		this.kafkaClientSslOptions = {
+			// TODO: see https://nodejs.org/api/tls.html#tls_new_tls_tlssocket_socket_options for options related to SSL
+		}
+		*/
 
 		var node = this;
 
+		// Trim whitespace from Kafka topic names (in case user put spaces after commas).
+		this.kafkaTopics.forEach(function(tpc, i) {
+			node.kafkaTopics[i] = tpc.trim();
+		});
+
+		var kafkaClient = new kafka.Client(this.kafkaZk, null, this.kafkaClientZkOptions, this.kafkaClientNoAckBatchOptions);
+		// TODO: implement SSL options
+		//var kafkaClient = new kafka.Client(this.kafkaZk, this.kafkaClientId, this.kafkaClientZkOptions, this.kafkaClientNoAckBatchOptions, this.kafkaClientSslOptions);
+
+		var kafkaProducerOptions = {
+			requireAcks: this.kafkaRequireAcks,
+			ackTimeoutMs: this.kafkaAckTimeoutMs,
+			partitionerType: this.kafkaPartitionerType
+		}
+
+		var kafkaProducer = new kafka.HighLevelProducer(kafkaClient, kafkaProducerOptions);
+
+        this.status({fill: "green", shape: "dot", text: "connected to " + this.kafkaZk});
+
 		try {
 			this.on('input', function(msg) {
-				// TODO: payloads should start as an empty array and be pushed to for each target kafka topic
-				// var payloads = []
-				// for (topic : topics) payloads.push
-				// TODO: review this...
-				//kafkaPayloads = [];
-				//kafkaPayloads.push(msg.payload);
-				var kafkaPayloads = [{topic: node.topics, messages: msg.payload}];
+				var kafkaPayloads = [];
+				node.kafkaTopics.forEach(function(tpc) {
+					kafkaPayloads.push({topic: tpc, messages: msg.payload})
+				});
 
 				kafkaProducer.send(kafkaPayloads, function(err, data) {
 					if (err) {
 						node.error(err);
 					}
-					if (node.debug) node.log("Message published to Kafka.\n\tZK: " + node.zk + "\n\tTopic: " + node.topics + "\n\tMessages: " + kafkaPayloads.messages);
 				});
 			});
 
 			this.on('close', function(done) {
 				kafkaClient.close(cb);
 			});
-		} catch (e) {
-			node.error(e);
+		} catch (err) {
+			node.error(err);
 		}
 	}
 	RED.nodes.registerType("kafka producer", kafkaProducerNode);

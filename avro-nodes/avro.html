@@ -3,31 +3,96 @@
         category: 'function',
         color: '#B0E2FF',
         defaults: {
-            name: {value:""},
-            schema: {value:"", required: true}
+            name: {value: ""},
+            schema: {value: "", required: true}
         },
         inputs:1,
         outputs:1,
         icon: "cloudera2.png",
-        align: "right",
         label: function() {
             return this.name || "avro";
+        },
+        labelStyle: function() {
+            return this.name ? "node_label_italic" : "";
+        },
+        oneditprepare: function() {
+            var that = this;
+            if (!this.editor) {
+                this.editor = RED.editor.createEditor({
+                    id: 'node-input-schema-editor',
+                    mode: 'ace/mode/jsonata',
+                    value: $("#node-input-schema").val()
+                });
+            }
+            this.editor.focus();
+        },
+        oneditsave: function() {
+            $("#node-input-schema").val(this.editor.getValue());
+            delete this.editor;
+        },
+        oneditresize: function(size) {
+            var rows = $("#dialog-form>div:not(.node-text-editor-row)");
+            var height = $("#dialog-form").height();
+            for (var i=0;i<rows.size();i++) {
+                height -= $(rows[i]).outerHeight(true);
+            }
+            var editorRow = $("#dialog-form>div.node-text-editor-row");
+            height -= (parseInt(editorRow.css("marginTop"))+parseInt(editorRow.css("marginBottom")));
+            $(".node-text-editor").css("height",height+"px");
+            this.editor.resize();
         }
     });
+
+    var doSwitch = function(val) {
+        if (val === "file") {
+            //$("#schema-literal-box").show();
+            //$("#schema-path-box").hide();
+            $("#schema-input").html("<input type=\"text\" id=\"node-input-schema\" placeholder=\"/path/to/avro/schema.avsc\">");
+        }
+        else if (val === "literal") {
+            //$("#schema-literal-box").hide();
+            //$("#schema-path-box").show();
+            $("#schema-input").html("<div class=\"form-row node-text-editor-row\"><div style=\"height: 250px; min-height: 150px;\" class=\"node-text-editor\" id=\"node-input-schema-editor>\"</div></div>");
+        }
+    };
 </script>
 
 <script type="text/x-red" data-template-name="avro">
     <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i>Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="avro">
     </div>
+
+    
     <div class="form-row">
-        <label for="node-input-schema"><i class="icon-tag"></i>Avro Schema</label>
-        <input type="text" id="node-input-schema" placeholder="Avro Schema">
+        <label for="schema-type-selector"><i class="icon-object"></i> Schema</label>
+        <select id="schema-type-selector" onchange="doSwitch(this.value)">
+            <option value="literal" selected="selected">literal</option>
+            <option value="file">from file</option>
+        </select>
     </div>
+
+    <div class="form-row" style="margin-bottom: 0px;">
+        <label for="node-input-schema" style="width: 100% !important;"><i class="fa fa-comments"></i> <span data-i18n="comment.label.body"></span></label>
+        <input type="hidden" id="node-input-schema" autofocus="autofocus">
+    </div>
+
+    <div id="schema-input">
+        <div class="form-row node-text-editor-row">
+            <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-schema-editor"></div>
+        </div>
+    </div>
+
+
 </script>
 
 <script type="text/x-red" data-help-name="avro">
-    <p>A node for converting between JavaScript object and Avro serialization.</p>
-    <p><b>Schema</b> - Path to an Avro schema file.</p>
+    <div>
+        <p>A function node that parses <code>msg.payload</code> to convert between JavaScript Object and Apache Avro serialization (using a user-supplied Avro schema file). Places the result in <code>msg.payload</code>.</p>
+        <p>If the input is a JavaScript Object it tries to serialize it as Avro.</p>
+        <p>If the input is an Avro buffer it tries to convert it into a JavaScript Object.</p>
+        <div class="form-tips"><span>To learn more about Apache Avro serialization and Avro schemas, visit the <a href="https://avro.apache.org/">Apache Avro website</a>.</span>
+        </div>
+        <p><b>Avro Schema</b> - path to an Avro schema file. This schema must correspond to the format of the incoming JavaScript Object in <code>msg.payload</code> or serialization will fail.</p>
+    </div>
 </script>
