@@ -121,20 +121,32 @@
 
 
 <script type="text/x-red" data-help-name="kafka consumer">
+    <h1>Overview</h1>
     <p>A Kafka Consumer node.</p>
-    <p><b>ZooKeeper Quorum</b>  <i>The ZooKeeper quorum of Kafka cluster.</i></p>
+    <p>Messages are consumed from the specified Kafka broker(s) and topic(s) and the message content is written to <code>msg.payload</code>.</p>
+    <div class="form-tips"><span>Apache Kafka is a massively scalable, general purpose pub/sub message queue well suited for high-throughput, low-latency streaming data applications.<br><br>It is very common in architectures involving Hadoop.<br><br>To learn more about Apache Kafka, visit the <a href="https://kafka.apache.org/">Apache Kafka website</a>.</span>
+    </div>
+    <h1>Configuration</h1>
+    <p><b>ZooKeeper Quorum</b></p>
+    <p><i>The ZooKeeper quorum of Kafka cluster.</i></p>
     <pre>
-Example:
+Examples:
 ZooKeeper = "localhost:2181"
-OR
-ZooKeeper = "zkhost1:2181,zkhost2:2181,zkhost3:2181"
+Zookeeper = "zkhost1:2181,zkhost2:2181,zkhost3:2181"
     </pre>
-    <p><b>Topic(s)</b> <i>The Kafka topic(s) this consumer should subscribe to.</i></p>
+    <p><b>Topic(s)</b></p>
+    <i>
+    <p>The Kafka topic(s) messages should be consumed from.</p>
+    </i>
     <pre>
-Example:
+Examples:
 Topic(s) = "topic"
-OR
-Topic(s) = "topic1, topic2, topic3"
+Topic(s) = "topic1,topic2,topic3"
     </pre>
-    <p><b>Encoding</b> <i>The encoding format of messages to be consumed. Generally "text". If messages have been Avro serialized, select "avro" and pass messages to an avro function node configured with the corresponding Avro schema to deserialize them.</i></p>
+    <p><b>Encoding</b><p>
+    <i>
+    <p>The encoding format of messages to be consumed.</p>
+    <p>Generally "text".</p>
+    <p>If messages have been Avro serialized, select "avro" and pass messages to an avro function node configured with the corresponding Avro schema to deserialize them.</p>
+    </i>
 </script>

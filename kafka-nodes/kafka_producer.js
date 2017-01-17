@@ -6,6 +6,7 @@ module.exports = function(RED) {
 	 */
 	function kafkaProducerNode(config) {
 		RED.nodes.createNode(this, config);
+		var node = this;
 
 		this.kafkaZk = config.zk;
 		this.kafkaTopics = config.topics.split(',');
@@ -37,7 +38,6 @@ module.exports = function(RED) {
 		}
 		*/
 
-		var node = this;
 
 		// Trim whitespace from Kafka topic names (in case user put spaces after commas).
 		this.kafkaTopics.forEach(function(tpc, i) {
@@ -56,7 +56,7 @@ module.exports = function(RED) {
 
 		var kafkaProducer = new kafka.HighLevelProducer(kafkaClient, kafkaProducerOptions);
 
-        this.status({fill: "green", shape: "dot", text: "connected to " + this.kafkaZk});
+        this.status({fill: "green", shape: "dot", text: "connected to " + node.kafkaZk});
 
 		try {
 			this.on('input', function(msg) {

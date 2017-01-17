@@ -108,22 +108,24 @@
 </script>
 
 <script type="text/x-red" data-help-name="kafka producer">
-    <p><b>Kafka Producer</b></p>
+    <h1>Overview</h1>
     <p>A Kafka Producer node.</p>
     <p>The content of <code>msg.payload</code> is published to the configured Kafka topic(s) as the Kafka message body.</p>
-    <p>The content of <code>msg.payload</code> must be either a String or .</p>
+    <p>The content of <code>msg.payload</code> must be either utf8 encoded text or a buffer. (TODO: stringify objects so we can accept Javascript objects as well)</p>
+    <div class="form-tips"><span>Apache Kafka is a massively scalable, general purpose pub/sub message queue well suited for high-throughput, low-latency streaming data applications.<br><br>It is very common in architectures involving Hadoop.<br><br>To learn more about Apache Kafka, visit the <a href="https://kafka.apache.org/">Apache Kafka website</a>.</span>
+    </div>
+    <h1>Configuration</h1>
     <p><b>ZooKeeper Quorum</b></p>
     <p><i>The ZooKeeper quorum of Kafka cluster.</i></p>
-    <p>Examples:</p>
     <pre>
-"localhost:2181"
-"zkhost1:2181,zkhost2:2181,zkhost3:2181"
+Examples:
+ZooKeeper = "localhost:2181"
+Zookeeper = "zkhost1:2181,zkhost2:2181,zkhost3:2181"
     </pre>
     <p><b>Topic(s)</b> <i>The Kafka topic(s) messages should be published to.</i></p>
     <pre>
-Example:
+Examples:
 Topic(s) = "topic"
-OR
 Topic(s) = "topic1,topic2,topic3"
     </pre>
 </script>

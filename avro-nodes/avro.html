@@ -4,7 +4,9 @@
         color: '#B0E2FF',
         defaults: {
             name: {value: ""},
-            schema: {value: "", required: true}
+            schemaLiteral: {value: ""},
+            schemaFile: {value: ""},
+            schemaSelector: {value: "literal", required: true}
         },
         inputs:1,
         outputs:1,
@@ -17,17 +19,38 @@
         },
         oneditprepare: function() {
             var that = this;
-            if (!this.editor) {
-                this.editor = RED.editor.createEditor({
-                    id: 'node-input-schema-editor',
+
+            var schemaLiteralVal = $("#node-input-schemaLiteral").val();
+            var editorVal = (schemaLiteralVal) ? schemaLiteralVal : '{\n\t"type" : "record",\n\t"namespace" : "NodeREDAvro",\n\t"name" : "ExampleSchema",\n\t"fields" : [\n\t\t{ "name" : "id" , "type" : "string" },\n\t\t{ "name" : "timestamp" , "type" : "long"},\n\t\t{ "name" : "value" , "type" : "float" }\n\t]\n}';
+            
+            var initEditor = function() {
+                that.editor = RED.editor.createEditor({
+                    id: 'node-input-schemaLiteral-editor',
                     mode: 'ace/mode/jsonata',
-                    value: $("#node-input-schema").val()
+                    value: editorVal
                 });
-            }
-            this.editor.focus();
+                that.editor.focus();
+            };
+
+            var setSchemaRowVisibility = function() {
+                var val = $("#node-input-schemaSelector").val();
+                if (val === "literal") {
+                    if (!that.editor) {
+                        initEditor();
+                    }
+                    $("#schemaLiteral-row").show();
+                    $("#schemaFile-row").hide();
+                }
+                else if (val === "file") {
+                    $("#schemaLiteral-row").hide();
+                    $("#schemaFile-row").show();
+                }
+            };
+
+            $("#node-input-schemaSelector").on("change", function() {setSchemaRowVisibility();});
         },
         oneditsave: function() {
-            $("#node-input-schema").val(this.editor.getValue());
+            $("#node-input-schemaLiteral").val(this.editor.getValue());
             delete this.editor;
         },
         oneditresize: function(size) {
@@ -43,18 +66,6 @@
         }
     });
 
-    var doSwitch = function(val) {
-        if (val === "file") {
-            //$("#schema-literal-box").show();
-            //$("#schema-path-box").hide();
-            $("#schema-input").html("<input type=\"text\" id=\"node-input-schema\" placeholder=\"/path/to/avro/schema.avsc\">");
-        }
-        else if (val === "literal") {
-            //$("#schema-literal-box").hide();
-            //$("#schema-path-box").show();
-            $("#schema-input").html("<div class=\"form-row node-text-editor-row\"><div style=\"height: 250px; min-height: 150px;\" class=\"node-text-editor\" id=\"node-input-schema-editor>\"</div></div>");
-        }
-    };
 </script>
 
 <script type="text/x-red" data-template-name="avro">
@@ -62,37 +73,43 @@
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="avro">
     </div>
-
-    
     <div class="form-row">
-        <label for="schema-type-selector"><i class="icon-object"></i> Schema</label>
-        <select id="schema-type-selector" onchange="doSwitch(this.value)">
-            <option value="literal" selected="selected">literal</option>
+        <label for="node-input-schemaSelector"><i class="icon-book"></i> Schema</label>
+        <select id="node-input-schemaSelector">
+            <option value="literal" selected>literal</option>
             <option value="file">from file</option>
         </select>
     </div>
-
     <div class="form-row" style="margin-bottom: 0px;">
-        <label for="node-input-schema" style="width: 100% !important;"><i class="fa fa-comments"></i> <span data-i18n="comment.label.body"></span></label>
-        <input type="hidden" id="node-input-schema" autofocus="autofocus">
+        <input type="hidden" id="node-input-schemaLiteral" autofocus="autofocus">
     </div>
-
-    <div id="schema-input">
-        <div class="form-row node-text-editor-row">
-            <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-schema-editor"></div>
+    <div class="form-row node-text-editor-row" id="schemaLiteral-row">
+        <div class="form-tips" id="schemaLiteralEditorTip">
+            <span><b>Important:</b> With "literal" selected, make sure you have replaced the example Avro schema in the editor below with an Avro schema corresponding to the format of your particular objects.</span>
         </div>
+        <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-schemaLiteral-editor"></div>
     </div>
-
-
+    <div class="form-row" id="schemaFile-row">
+        <label for="node-input-schemaFile"><i class="icon-file"></i> Path</label>
+        <input type="text" id="node-input-schemaFile" placeholder="/path/to/avro/schema.avsc">
+    </div>
 </script>
 
 <script type="text/x-red" data-help-name="avro">
-    <div>
-        <p>A function node that parses <code>msg.payload</code> to convert between JavaScript Object and Apache Avro serialization (using a user-supplied Avro schema file). Places the result in <code>msg.payload</code>.</p>
-        <p>If the input is a JavaScript Object it tries to serialize it as Avro.</p>
-        <p>If the input is an Avro buffer it tries to convert it into a JavaScript Object.</p>
-        <div class="form-tips"><span>To learn more about Apache Avro serialization and Avro schemas, visit the <a href="https://avro.apache.org/">Apache Avro website</a>.</span>
-        </div>
-        <p><b>Avro Schema</b> - path to an Avro schema file. This schema must correspond to the format of the incoming JavaScript Object in <code>msg.payload</code> or serialization will fail.</p>
+    <h1>Overview</h1>
+    <p>A function node that parses <code>msg.payload</code> to convert between JavaScript Object and Apache Avro serialization (using a user-supplied Avro schema). Places the result in <code>msg.payload</code>.</p>
+    <p>If the input is a JavaScript Object it tries to serialize it as Avro.</p>
+    <p>If the input is an Avro buffer it tries to convert it into a JavaScript Object.</p>
+    <div class="form-tips"><span>Apache Avro is a data serialization system providing a compact, fast, binary data format for efficient use of network and storage resources.<br><br>To learn more about Apache Avro serialization and Avro schemas, visit the <a href="https://avro.apache.org/">Apache Avro website</a>.</span>
     </div>
+    <h1>Configuration</h1>
+    <p><b>Schema</b></p>
+    <i>
+    <p>Specify how you will be providing your Avro schema.</p>
+    <p>If "literal" is selected, you must provide an Avro schema in the text editor.</p>
+    <p>If "from file" is selected, you must provide the path to an Avro schema on the local filesystem.</p>
+    <p>In either case, the schema must be a valid Avro schema and correspond to the format of the JavaScript Object in the input <code>msg.payload</code>.</p>
+    <p>If the schema is not valid, this node will log an error and fail to initialize properly.</p>
+    <p>If the schema does not match the format of the input <code>msg.payload</code>, serialization and deserialization attempts will fail.</p>
+    </i>
 </script>

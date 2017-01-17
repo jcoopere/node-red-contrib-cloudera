@@ -6,14 +6,22 @@ module.exports = function(RED) {
 	 *
 	 * Converts JSON to Avro and Avro to JSON.
 	 */
-	function kafkaProducerNode(config) {
+	function avroNode(config) {
 		RED.nodes.createNode(this, config);
 
-		this.schema = config.schema;
-
-		var type = avro.parse(this.schema);
+		this.schemaLiteral = config.schemaLiteral;
+		this.schemaFile = config.schemaFile;
+		this.schemaSelector = config.schemaSelector;
 
 		var node = this;
+
+		var schema = config.schemaLiteral;
+
+		if (!schema) {
+			node.error("No Avro schema provided.");
+		}
+
+		var type = avro.parse(schema);
 
 		try {
 			this.on('input', function(msg) {
@@ -35,5 +43,5 @@ module.exports = function(RED) {
 			node.error(e);
 		}
 	}
-	RED.nodes.registerType("avro", kafkaProducerNode);
+	RED.nodes.registerType("avro", avroNode);
 }
