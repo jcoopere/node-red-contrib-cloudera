@@ -4,8 +4,11 @@ A collection of Node-RED nodes for integrating with Cloudera's software distribu
 ## Installation
 To install these nodes, you can either install it locally within your user data directory (by default, $HOME/.node-red):
 
-`cd $HOME/.node-red
-npm install node-red-contrib-cloudera`
+```
+cd $HOME/.node-red
+npm install node-red-contrib-cloudera
+```
+
 or globally alongside Node-RED:
 
 `sudo npm install -g node-red-contrib-cloudera`
