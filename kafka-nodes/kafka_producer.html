@@ -108,12 +108,12 @@
 </script>
 
 <script type="text/x-red" data-help-name="kafka producer">
+    <div class="form-tips"><span>Apache Kafka is a massively scalable, general purpose pub/sub message queue well suited for high-throughput, low-latency streaming data applications.<br><br>To learn more about Apache Kafka, visit the <a href="https://kafka.apache.org/">Apache Kafka website</a>.</span>
+    </div>
     <h1>Overview</h1>
     <p>A Kafka Producer node.</p>
     <p>The content of <code>msg.payload</code> is published to the configured Kafka topic(s) as the Kafka message body.</p>
-    <p>The content of <code>msg.payload</code> must be either utf8 encoded text or a buffer. (TODO: stringify objects so we can accept Javascript objects as well)</p>
-    <div class="form-tips"><span>Apache Kafka is a massively scalable, general purpose pub/sub message queue well suited for high-throughput, low-latency streaming data applications.<br><br>It is very common in architectures involving Hadoop.<br><br>To learn more about Apache Kafka, visit the <a href="https://kafka.apache.org/">Apache Kafka website</a>.</span>
-    </div>
+    <p>The content of <code>msg.payload</code> must be a string, a JavaScript Object, or a Buffer. (Note: JavaScript Objects will be automatically converted into strings using <code>JSON.stringify()</code>.</p>
     <h1>Configuration</h1>
     <p><b>ZooKeeper Quorum</b></p>
     <p><i>The ZooKeeper quorum of Kafka cluster.</i></p>

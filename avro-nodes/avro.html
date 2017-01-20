@@ -4,6 +4,7 @@
         color: '#B0E2FF',
         defaults: {
             name: {value: ""},
+            property: {value: "payload", required: true},
             schemaLiteral: {value: ""},
             schemaFile: {value: ""},
             schemaSelector: {value: "literal", required: true}
@@ -21,7 +22,7 @@
             var that = this;
 
             var schemaLiteralVal = $("#node-input-schemaLiteral").val();
-            var editorVal = (schemaLiteralVal) ? schemaLiteralVal : '{\n\t"type" : "record",\n\t"namespace" : "NodeREDAvro",\n\t"name" : "ExampleSchema",\n\t"fields" : [\n\t\t{ "name" : "id" , "type" : "string" },\n\t\t{ "name" : "timestamp" , "type" : "long"},\n\t\t{ "name" : "value" , "type" : "float" }\n\t]\n}';
+            var editorVal = (schemaLiteralVal) ? schemaLiteralVal : '{\n\t"type" : "record",\n\t"namespace" : "NodeREDAvro",\n\t"name" : "UnivariateTimeseriesExampleSchema",\n\t"fields" : [\n\t\t{ "name" : "id" , "type" : "string" },\n\t\t{ "name" : "timestamp" , "type" : "long"},\n\t\t{ "name" : "value" , "type" : "float" }\n\t]\n}';
             
             var initEditor = function() {
                 that.editor = RED.editor.createEditor({
@@ -74,6 +75,10 @@
         <input type="text" id="node-input-name" placeholder="avro">
     </div>
     <div class="form-row">
+        <label for="node-input-property"><i class="icon-tasks"></i> Property</label>
+        msg.<input type="text" id="node-input-property" placeholder="payload">
+    </div>
+    <div class="form-row">
         <label for="node-input-schemaSelector"><i class="icon-book"></i> Schema</label>
         <select id="node-input-schemaSelector">
             <option value="literal" selected>literal</option>
@@ -96,20 +101,26 @@
 </script>
 
 <script type="text/x-red" data-help-name="avro">
-    <h1>Overview</h1>
-    <p>A function node that parses <code>msg.payload</code> to convert between JavaScript Object and Apache Avro serialization (using a user-supplied Avro schema). Places the result in <code>msg.payload</code>.</p>
-    <p>If the input is a JavaScript Object it tries to serialize it as Avro.</p>
-    <p>If the input is an Avro buffer it tries to convert it into a JavaScript Object.</p>
     <div class="form-tips"><span>Apache Avro is a data serialization system providing a compact, fast, binary data format for efficient use of network and storage resources.<br><br>To learn more about Apache Avro serialization and Avro schemas, visit the <a href="https://avro.apache.org/">Apache Avro website</a>.</span>
     </div>
+    <h1>Overview</h1>
+    <p>A function node that parses the specified property of the <code>msg</code> object to convert between JavaScript Object and Apache Avro serialization (using a user-supplied Avro schema). Places the result back in the specified property.</p>
+    <p>If the value of the specified property is a JavaScript Object it tries to serialize it as Avro.</p>
+    <p>If the value of the specified property is an Avro buffer it tries to convert it into a JavaScript Object.</p>
     <h1>Configuration</h1>
+    <p><b>Property</b></p>
+    <i>
+    <p>Specify the target property of the <code>msg</code> object to be serialized/deserialized.</p>
+    <p>Default value is "payload", which attempts to serialize or deserialize the entire contents of <code>msg.payload</code>.</p>
+    <p>If you are attempting to deserialize Kafka message bodies output from a "kafka consumer" node, set this to "payload.value".</p>
+    </i>
     <p><b>Schema</b></p>
     <i>
     <p>Specify how you will be providing your Avro schema.</p>
     <p>If "literal" is selected, you must provide an Avro schema in the text editor.</p>
     <p>If "from file" is selected, you must provide the path to an Avro schema on the local filesystem.</p>
-    <p>In either case, the schema must be a valid Avro schema and correspond to the format of the JavaScript Object in the input <code>msg.payload</code>.</p>
+    <p>In either case, the schema must be a valid Avro schema and correspond to the format of the JavaScript Object in the input <code>msg.&ltproperty&gt</code>.</p>
     <p>If the schema is not valid, this node will log an error and fail to initialize properly.</p>
-    <p>If the schema does not match the format of the input <code>msg.payload</code>, serialization and deserialization attempts will fail.</p>
+    <p>If the schema does not match the format of the input <code>msg.&ltproperty&gt</code>, serialization and deserialization attempts will fail.</p>
     </i>
 </script>

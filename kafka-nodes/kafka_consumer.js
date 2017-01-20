@@ -11,41 +11,12 @@ module.exports = function(RED) {
 		this.kafkaZk = config.zk;
 		this.kafkaTopics = config.topics.split(',');
 		this.kafkaClientId = config.kafkaClientId ? config.kafkaClientId : null;
-		/*this.zkSessionTimeout = config.zkSessionTiemout ? config.zkSessionTimeout : null;
-		this.zkSpinDelay = config.zkSpinDelay ? config.zkSpinDelay : null;
-		this.zkRetries = config.zkRetries ? config.zkRetries : null;
-		this.kafkaNoAckBatchSize = config.noAckBatchSize ? config.noAckBatchSize : null;
-		this.kafkaNoAckBatchAge = config.noAckBatchAge ? config.noAckBatchAge : null;
-		*/
-		/*this.kafkaConsumerGroupId = config.consumerGroupId ? config.consumerGroupId : null;
-		this.kafkaConsumerId = config.consumerId ? config.consumerId : null;
-		this.kafkaAutoCommit = config.autoCommit ? config.autoCommit : true;
-		this.kafkaAutoCommitInterval = config.autoCommitInterval ? config.autoCommitInterval : 5000;
-		this.kafkaFetchMaxWaitMs = config.fetchWaitMaxMs ? config.fetchWaitMaxMs : 100;
-		this.kafkaFetchMinBytes = config.fetchMinBytes ? config.fetchMinBytes : 1;
-		this.kafkaFetchMaxBytes = config.fetchMaxBytes ? config.fetchMaxBytes : 1024 * 1024;
-		this.kafkaFromOffset = config.fromOffset ? config.fromOffset : false;
-		this.kafkaEncoding = config.kafkaEncoding;
-		*/
 
-		/*
-		this.kafkaClientZkOptions = {
-			sessionTimeout: this.zkSessionTimeout,
-			spinDelay: this.zkSpinDelay,
-			retries: this.zkRetries
-		}
-		*/
 		this.kafkaClientZkOptions = {};
 		if (config.zkSessionTimeout) this.kafkaClientZkOptions.sessionTimeout = config.zkSessionTimeout;
 		if (config.zkSpinDelay) this.kafkaClientZkOptions.spinDelay = config.zkSpinDelay;
 		if (config.zkRetries) this.kafkaClientZkOptions.retries = config.zkRetries;
 
-		/*
-		this.kafkaClientNoAckBatchOptions = {
-			noAckBatchSize: this.kafkaNoAckBatchSize,
-			noAckBatchAge: this.kafkaNoAckBatchAge
-		}
-		*/
 		this.kafkaClientNoAckBatchOptions = {};
 		if (config.kafkaNoAckBatchSize) this.kafkaClientNoAckBatchOptions.noAckBatchSize = config.kafkaNoAckBatchSize;
 		if (config.kafkaNoAckBatchAge) this.kafkaClientNoAckBatchOptions.noAckBatchAge = config.kafkaNoAckBatchAge;
@@ -67,18 +38,6 @@ module.exports = function(RED) {
 			kafkaPayloads.push({topic: tpc});
 		});
 
-		/*var kafkaConsumerOptions = {
-			groupId: this.kafkaConsumerGroupId,
-			id: this.kafkaConsumerId,
-			autoCommit: this.kafkaAutoCommit,
-			autoCommitInterval: this.kafkaAutoCommitInterval,
-			fetchMaxWaitMs: this.kafkaFetchMaxWaitMs,
-			fetchMinBytes: this.kafkaFetchMinBytes,
-			fetchMaxBytes: this.kafkaFetchMaxBytes,
-			fromOffset: this.kafkaFromOffset,
-			encoding: this.kafkaEncoding
-		}
-		*/
 		this.kafkaConsumerOptions = {};
 		if (config.consumerGroupId) this.kafkaConsumerOptions.groupId = config.consumerGroupId;
 		if (config.consumerId) this.kafkaConsumerOptions.id = config.consumerId;
@@ -101,12 +60,23 @@ module.exports = function(RED) {
 	        node.status({fill: "green", shape: "dot", text: "connected to " + node.kafkaZk});
 
 			kafkaConsumer.on('message', function(msg) {
-				//node.send({payload: msg});
-				node.send({payload: msg.value});
+				/* N.B. 
+				 A Kafka message is a JavaScript Object including the following properties:
+				  - topic (name of the topic the message was consumed from)
+				  - value (message body)
+				  - offset (message offset)
+				  - partition (partition message was consumed from)
+				  - key (key of the message)
+				*/
+				node.send({payload: msg});
 			});
 
 			kafkaConsumer.on('error', function(err) {
 				node.error(err);
+				/*if (err == "FailedToRebalanceConsumerError: Exception: NODE_EXISTS[-110]") {
+					node.warn("Failed to rebalance consumer detected. Pausing for 60 seconds and reconnecting...");
+					setTimeout(function() { node.warn("Recreating consumer..."); kafkaConsumer = new kafka.HighLevelConsumer(kafkaClient, kafkaPayloads, node.kafkaConsumerOptions); }, 60000);
+				}*/
 			});
 
 			kafkaConsumer.on('offsetOutOfRange', function(err) {
@@ -114,7 +84,7 @@ module.exports = function(RED) {
 			});
 
 			this.on('close', function(done) {
-				kafkaConsumer.close(cb);
+				kafkaConsumer.close(true, cb);
 				kafkaClient.close(cb);
 			});
 		} catch (err) {

@@ -9,13 +9,56 @@ module.exports = function(RED) {
 	function avroNode(config) {
 		RED.nodes.createNode(this, config);
 
-		this.schemaLiteral = config.schemaLiteral;
-		this.schemaFile = config.schemaFile;
-		this.schemaSelector = config.schemaSelector;
-
 		var node = this;
 
-		var schema = config.schemaLiteral;
+		function getPropByString(obj, propString) {
+		    if (!propString)
+		        return obj;
+
+		    var prop, props = propString.split('.');
+
+		    for (var i = 0, iLen = props.length - 1; i < iLen; i++) {
+		        prop = props[i];
+
+		        var candidate = obj[prop];
+		        if (candidate !== undefined) {
+		            obj = candidate;
+		        } else {
+		            break;
+		        }
+		    }
+
+		    return obj[props[i]];
+		}
+
+		function setPropByString(obj, propString, val) {
+		    if (!propString)
+		        return obj;
+
+		    var prop, props = propString.split('.');
+
+		    for (var i = 0, iLen = props.length - 1; i < iLen; i++) {
+		        prop = props[i];
+
+		        var candidate = obj[prop];
+		        if (candidate !== undefined) {
+		            obj = candidate;
+		        } else {
+		            break;
+		        }
+		    }
+		    obj[props[i]] = val;
+		}
+
+		var schema = '';
+
+		if (config.schemaSelector == 'literal') {
+			schema = config.schemaLiteral;
+		} else if (config.schemaSelector == 'file') {
+			schema = config.schemaFile;
+		} else {
+			node.error("Missing schema selector. Must be \"literal\" or \"file\".");
+		}
 
 		if (!schema) {
 			node.error("No Avro schema provided.");
@@ -25,22 +68,38 @@ module.exports = function(RED) {
 
 		try {
 			this.on('input', function(msg) {
-				if (typeof(msg.payload) == 'object') {
-					if (Buffer.isBuffer(msg.payload)) {
-						msg.payload = type.fromBuffer(msg.payload);
+				var val = getPropByString(msg, config.property);
+
+				if (typeof(val) == 'undefined') {
+					node.error("Property \"" + config.property + "\" is undefined.");
+				}
+
+				if (typeof(val) == 'string') {
+					val = JSON.parse(msg[config.property]);
+				}
+
+				if (typeof(val) == 'object') {
+					if (Buffer.isBuffer(val)) {
+						val = type.fromBuffer(val);
+						setPropByString(msg, config.property, val);
 						node.send(msg);
-					} else if (type.isValid(msg.payload)) {
-						msg.payload = type.toBuffer(msg.payload);
+					} else if (type.isValid(val)) {
+						val = type.toBuffer(val);
+						setPropByString(msg, config.property, val);
 						node.send(msg);
 					} else {
-						node.error("msg.payload object is not valid for the provided Avro schema: " + JSON.stringify(msg.payload));
+						node.error(config.property + " object is not valid for the provided Avro schema: " + JSON.stringify(val));
 					}
 				} else {
-					node.error("msg.payload is not an object, type is: " + typeof(msg.payload));
+					node.error(config.property + " is not an object, type is: " + typeof(val));
 				}
 			});
 		} catch (e) {
-			node.error(e);
+			if (e instanceof SyntaxError) {
+				node.error(config.property + " is neither a JavaScript Object nor a valid JSON string: " + e);
+			} else {
+				node.error(e);
+			}
 		}
 	}
 	RED.nodes.registerType("avro", avroNode);

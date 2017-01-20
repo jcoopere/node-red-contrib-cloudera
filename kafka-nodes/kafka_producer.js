@@ -11,25 +11,15 @@ module.exports = function(RED) {
 		this.kafkaZk = config.zk;
 		this.kafkaTopics = config.topics.split(',');
 		this.kafkaClientId = config.kafkaClientId ? config.kafkaClientId : null;
-		this.zkSessionTimeout = config.zkSessionTiemout ? config.zkSessionTimeout : null;
-		this.zkSpinDelay = config.zkSpinDelay ? config.zkSpinDelay : null;
-		this.zkRetries = config.zkRetries ? config.zkRetries : null;
-		this.kafkaNoAckBatchSize = config.noAckBatchSize ? config.noAckBatchSize : null;
-		this.kafkaNoAckBatchAge = config.noAckBatchAge ? config.noAckBatchAge : null;
-		this.kafkaRequireAcks = config.requireAcks ? config.requireAcks : null;
-		this.kafkaAckTimeoutMs = config.ackTimeoutMs ? config.ackTimeoutMs : null;
-		this.kafkaPartitionerType = config.partitionerType ? config.partitionerType : null;
 
-		this.kafkaClientZkOptions = {
-			sessionTimeout: this.zkSessionTimeout,
-			spinDelay: this.zkSpinDelay,
-			retries: this.zkRetries
-		}
+		this.kafkaClientZkOptions = {};
+		if (config.zkSessionTimeout) this.kafkaClientZkOptions.sessionTimeout = config.zkSessionTimeout;
+		if (config.zkSpinDelay) this.kafkaClientZkOptions.spinDelay = config.zkSpinDelay;
+		if (config.zkRetries) this.kafkaClientZkOptions.retries = config.zkRetries;
 
-		this.kafkaClientNoAckBatchOptions = {
-			noAckBatchSize: this.kafkaNoAckBatchSize,
-			noAckBatchAge: this.kafkaNoAckBatchAge
-		}
+		this.kafkaClientNoAckBatchOptions = {};
+		if (config.kafkaNoAckBatchSize) this.kafkaClientNoAckBatchOptions.noAckBatchSize = config.kafkaNoAckBatchSize;
+		if (config.kafkaNoAckBatchAge) this.kafkaClientNoAckBatchOptions.noAckBatchAge = config.kafkaNoAckBatchAge;
 
 		/*
 		// TODO: implement SSL options
@@ -37,7 +27,6 @@ module.exports = function(RED) {
 			// TODO: see https://nodejs.org/api/tls.html#tls_new_tls_tlssocket_socket_options for options related to SSL
 		}
 		*/
-
 
 		// Trim whitespace from Kafka topic names (in case user put spaces after commas).
 		this.kafkaTopics.forEach(function(tpc, i) {
@@ -48,21 +37,31 @@ module.exports = function(RED) {
 		// TODO: implement SSL options
 		//var kafkaClient = new kafka.Client(this.kafkaZk, this.kafkaClientId, this.kafkaClientZkOptions, this.kafkaClientNoAckBatchOptions, this.kafkaClientSslOptions);
 
-		var kafkaProducerOptions = {
-			requireAcks: this.kafkaRequireAcks,
-			ackTimeoutMs: this.kafkaAckTimeoutMs,
-			partitionerType: this.kafkaPartitionerType
-		}
+		this.kafkaProducerOptions = {};
+		if (config.requireAcks) this.kafkaProducerOptions.requireAcks = config.requireAcks;
+		if (config.ackTimeoutMs) this.kafkaProducerOptions.ackTimeoutMs = config.ackTimeoutMs;
+		if (config.partitionerType) this.kafkaProducerOptions.partitionerType = config.partitionerType;
 
-		var kafkaProducer = new kafka.HighLevelProducer(kafkaClient, kafkaProducerOptions);
+		var kafkaProducer = new kafka.HighLevelProducer(kafkaClient, this.kafkaProducerOptions);
 
         this.status({fill: "green", shape: "dot", text: "connected to " + node.kafkaZk});
 
 		try {
 			this.on('input', function(msg) {
+				var payload = msg.payload;
+
+				// If msg.payload is of type 'object' and is NOT a Buffer, it should be stringified.
+				// Otherwise, the value of the Kafka message will be "[object Object]".
+				if (typeof(payload) == 'object') {
+					if (!Buffer.isBuffer(payload)) {
+						payload = JSON.stringify(payload);
+					}
+				}
+
+				// TODO: ProduceRequest can also have properties for "key" (for keyed partitioning) and "attributes"
 				var kafkaPayloads = [];
 				node.kafkaTopics.forEach(function(tpc) {
-					kafkaPayloads.push({topic: tpc, messages: msg.payload})
+					kafkaPayloads.push({topic: tpc, messages: payload})
 				});
 
 				kafkaProducer.send(kafkaPayloads, function(err, data) {
