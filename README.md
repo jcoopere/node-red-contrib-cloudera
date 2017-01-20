@@ -1,6 +1,17 @@
 # node-red-contrib-cloudera
 A collection of Node-RED nodes for integrating with Cloudera's software distribution including Apache Hadoop.
 
+## Installation
+To install these nodes, you can either install it locally within your user data directory (by default, $HOME/.node-red):
+
+`cd $HOME/.node-red
+npm install node-red-contrib-cloudera`
+or globally alongside Node-RED:
+
+`sudo npm install -g node-red-contrib-cloudera`
+
+You will need to restart Node-RED for it to pick-up the new nodes.
+
 ## Node-RED Nodes
 This package includes the following Node-RED nodes:
   - kafka producer
