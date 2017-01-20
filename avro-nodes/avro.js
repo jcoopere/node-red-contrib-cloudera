@@ -16,8 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 module.exports = function(RED) {
-	var avro = require('avro-js');
-
 	/*
 	 * Avro Converter Node
 	 *
@@ -25,6 +23,8 @@ module.exports = function(RED) {
 	 */
 	function avroNode(config) {
 		RED.nodes.createNode(this, config);
+		
+		var avro = require('avro-js');
 
 		var node = this;
 

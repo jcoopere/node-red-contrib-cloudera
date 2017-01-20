@@ -16,13 +16,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 module.exports = function(RED) {
-	var kafka = require('kafka-node');
-
 	/*
 	 * Kafka Producer Node
 	 */
 	function kafkaProducerNode(config) {
 		RED.nodes.createNode(this, config);
+
+		var kafka = require('kafka-node');
+
 		var node = this;
 
 		this.kafkaZk = config.zk;
