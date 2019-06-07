@@ -3,7 +3,7 @@
     "version"      : "0.0.3",
     "description"  : "A collection of Node-RED nodes for integrating with Cloudera's software distribution including Apache Hadoop. Includes nodes for producing and consuming Apache Kafka messages, as well as Apache Avro serialization and deserialization.",
     "dependencies" : {
-        "kafka-node" : ">=0.3.2",
+        "kafka-node" : "<=1.6.2",
         "avro-js" : ">=1.8.0"
     },
     "repository" : {
